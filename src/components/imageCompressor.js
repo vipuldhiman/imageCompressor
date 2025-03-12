@@ -10,15 +10,19 @@ const ImageCompressor = () => {
   const [compressedImage, setCompressedImage] = useState(null);
   const [compressionQuality, setCompressionQuality] = useState(80);
   const [loading, setLoading] = useState(false);
-
+  const MAX_FILE_SIZE_MB = 5;
   // Handles file upload and passes it for compression
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
-    if (file) {
-      setOriginalImage(file); // Store actual File object
-      setCompressedImage(null);
-      resizeImage(file, compressionQuality);
+    if (!file) return;
+    const fileSizeMb = file.size / (1024 * 1024);
+    if (fileSizeMb > MAX_FILE_SIZE_MB) {
+      alert(`File size exceeds ${MAX_FILE_SIZE_MB}MB. Please upload a smaller file.`);
+      return;
     }
+    setOriginalImage(file); // Store actual File object
+    setCompressedImage(null);
+    resizeImage(file, compressionQuality);
   };
 
   // Compress image properly using Resizer
@@ -34,6 +38,7 @@ const ImageCompressor = () => {
       quality, // Compression quality
       0, // No rotation
       (uri) => {
+        console.log("Compressed Image URI:", uri)
         setCompressedImage(uri); // Store base64 URI
         setLoading(false);
       },
@@ -57,8 +62,9 @@ const ImageCompressor = () => {
       <ImageUploader onImageUpload={handleImageUpload} />
 
       <div className="slider-container">
-        <label>Compression Quality: {compressionQuality}%</label>
+        <label htmlFor="compression-quality">Compression Quality: {compressionQuality}%</label>
         <input
+          id="compression-quality"
           type="range"
           min="10"
           max="100"
